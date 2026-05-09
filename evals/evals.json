@@ -1,0 +1,193 @@
+{
+  "skill_name": "code-refactor",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I'm looking at our Python order processing module at src/services/order_service.py and it's gotten out of hand. The process_order function is like 200 lines long, there's duplicated validation logic between create_order and update_order, and several places are doing raw dict access like order['status'] instead of using typed objects. Can you audit this and suggest what to refactor?",
+      "expected_output": "Audit with caller counts, identify long method + duplicated code + type safety smells, present tradeoffs, propose specific refactoring steps",
+      "files": [],
+      "assertions": [
+        {
+          "name": "caller-count-audit",
+          "description": "Runs caller count audit before proposing changes"
+        },
+        {
+          "name": "identifies-long-method",
+          "description": "Identifies process_order as a Long Method (>50 lines, multiple responsibilities)"
+        },
+        {
+          "name": "identifies-duplicated-code",
+          "description": "Identifies duplicated validation logic between create_order and update_order"
+        },
+        {
+          "name": "identifies-type-safety-issue",
+          "description": "Identifies raw dict access as a type safety boundary problem"
+        },
+        {
+          "name": "before-after-diff",
+          "description": "Includes at least one BEFORE/AFTER code diff"
+        },
+        {
+          "name": "states-tradeoffs",
+          "description": "Explicitly states what got better AND what got worse for each proposed change"
+        },
+        {
+          "name": "surgical-commit-plan",
+          "description": "Proposes a sequence of small, separate commits"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Our TypeScript React app has a data transformation module (src/transforms/entry-converter.ts) that's become a mess. There's a bunch of single-use helper functions that only get called once, a giant switch statement where 3 of the 5 branches do basically the same thing (serialize to string then wrap), and the types are defined by duplicating fields instead of using intersections. How should I clean this up?",
+      "expected_output": "Identify single-caller inlining candidates, collapse duplicate switch branches, derive types via intersection, surgical commit plan",
+      "files": [],
+      "assertions": [
+        {
+          "name": "inline-single-callers",
+          "description": "Identifies single-use helper functions as inline candidates"
+        },
+        {
+          "name": "collapse-duplicate-branches",
+          "description": "Identifies 3-of-5 switch branches doing the same thing and proposes collapsing"
+        },
+        {
+          "name": "type-intersection",
+          "description": "Suggests using type intersections/composition instead of duplicating fields"
+        },
+        {
+          "name": "before-after-diff",
+          "description": "Includes at least one BEFORE/AFTER code diff"
+        },
+        {
+          "name": "states-tradeoffs",
+          "description": "Explicitly states tradeoffs for proposed changes"
+        },
+        {
+          "name": "surgical-commit-plan",
+          "description": "Proposes a sequence of small, separate commits"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "I'm reviewing a Java service \u2014 com.acme.payment.PaymentProcessor \u2014 that's become difficult to maintain. It has null checks nested 4 levels deep, validates shipping vs payment vs notification all in one 100-line method, and three different shipping strategies implemented as a long if-else chain. What's the right refactoring approach here?",
+      "expected_output": "Convert nested conditionals to guard clauses, extract Chain of Responsibility for validation, apply Strategy pattern for shipping, split Large Class by responsibility",
+      "files": [],
+      "assertions": [
+        {
+          "name": "guard-clauses",
+          "description": "Proposes converting nested null checks to guard clauses / early returns"
+        },
+        {
+          "name": "chain-of-responsibility",
+          "description": "Suggests Chain of Responsibility for the multi-step validation logic"
+        },
+        {
+          "name": "strategy-pattern",
+          "description": "Suggests Strategy pattern to replace the if-else shipping chain"
+        },
+        {
+          "name": "large-class-split",
+          "description": "Identifies Large Class smell and proposes splitting by responsibility"
+        },
+        {
+          "name": "five-axis-scan",
+          "description": "NEW SKILL ONLY: Includes a five-axis pre-refactoring assessment scan"
+        },
+        {
+          "name": "severity-labeling",
+          "description": "NEW SKILL ONLY: Uses severity labels (Critical/Nit/Optional) for findings"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "I refactored our order service and now the unit tests are failing \u2014 they were testing internal helper functions that I inlined. Should I update the tests to match the new structure? Also our test file is 800 lines with a lot of duplicated setup code, can we refactor that too while we're at it?",
+      "expected_output": "Warn that refactoring tests alongside production code breaks the safety net. Tests failing means either behavior changed (not refactoring) or tests were testing implementation details. Advise: revert if behavior changed, or separate test cleanup into its own dedicated pass. Do NOT refactor test file in same pass.",
+      "files": [],
+      "assertions": [
+        {
+          "name": "warns-against-test-refactor",
+          "description": "NEW SKILL: Explicitly warns NOT to refactor test files alongside production code"
+        },
+        {
+          "name": "diagnoses-test-failure",
+          "description": "Diagnoses why tests broke: behavior change vs implementation-detail testing"
+        },
+        {
+          "name": "separate-pass-guidance",
+          "description": "Advises test cleanup in a separate, dedicated pass if needed"
+        },
+        {
+          "name": "behavior-preservation-check",
+          "description": "Checks whether behavior was actually preserved during the refactor"
+        },
+        {
+          "name": "test-as-spec",
+          "description": "NEW SKILL: References tests as the specification of expected behavior"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "There's this weird null check in our Python data pipeline at src/pipeline/transform.py line 142 \u2014 it guards against a condition that I don't think can ever happen. The code works fine without it when I tested locally. Should I just remove it to simplify the flow?",
+      "expected_output": "Apply Chesterton's Fence: check git blame for why the null check was added, verify it's truly unreachable before removing. Show the five-axis scan for this specific change. If it's genuinely dead code, flag it and ask before deleting.",
+      "files": [],
+      "assertions": [
+        {
+          "name": "chestertons-fence",
+          "description": "NEW SKILL: Mentions Chesterton's Fence by name or explains the concept"
+        },
+        {
+          "name": "git-blame-check",
+          "description": "NEW SKILL: Suggests checking git blame before removing the null check"
+        },
+        {
+          "name": "five-axis-scan",
+          "description": "NEW SKILL: Applies five-axis pre-refactoring scan to this specific change"
+        },
+        {
+          "name": "ask-before-delete",
+          "description": "NEW SKILL: Advises asking/confirming before deleting the guard code"
+        },
+        {
+          "name": "dead-code-hygiene",
+          "description": "Addresses dead code hygiene: lists what would be removed and asks confirmation"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "Our codebase has a utils/helpers.ts file that's become a dumping ground \u2014 there's formatDate, formatCurrency, parseDate, parseCurrency, and about 20 other functions. Some are used everywhere, some are used once, and a few appear to be unused. Also some functions take boolean flags like formatDate(date, true, false) which is impossible to understand at call sites. How should I approach cleaning this up?",
+      "expected_output": "Run caller count audit on every export, apply simplification patterns (boolean flags \u2192 options object, generic names \u2192 descriptive), identify dead code for deletion, inline single-callers, scope the cleanup to avoid touching unrelated code. Apply Rule of 500 if needed.",
+      "files": [],
+      "assertions": [
+        {
+          "name": "caller-count-audit",
+          "description": "Runs caller count audit on every export in the helpers file"
+        },
+        {
+          "name": "boolean-flag-pattern",
+          "description": "NEW SKILL: Identifies boolean parameter flags and suggests options objects or separate functions"
+        },
+        {
+          "name": "rule-of-500",
+          "description": "NEW SKILL: Mentions the Rule of 500 or suggests automation for large changes"
+        },
+        {
+          "name": "dead-code-identification",
+          "description": "Identifies unused functions and proposes deletion"
+        },
+        {
+          "name": "scope-discipline",
+          "description": "NEW SKILL: Advises scoping cleanup to avoid touching unrelated code"
+        },
+        {
+          "name": "simplification-pattern-table",
+          "description": "NEW SKILL: References simplification patterns (structural/naming/redundancy)"
+        }
+      ]
+    }
+  ]
+}
