@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 项目概述
 
-这是一个 Claude Code 技能项目，提供系统化代码重构与技术债评估方法论。技能定义在 `SKILL.md`（YAML 前置元数据 + Markdown 正文），覆盖：调用者计数审计、类型安全边界、单次调用内联、重复分支合并、参数对象重构、派生类型、技术债五维清单、ROI 优先路线图、预防策略与度量指标等。
+这是一个 Claude Code 技能项目，提供系统化代码重构、代码审查、代码简化与技术债评估方法论。技能定义在 `SKILL.md`（YAML 前置元数据 + Markdown 正文），覆盖：五轴代码审查流程、调用者计数审计、类型安全边界、代码简化、单次调用内联、重复分支合并、参数对象重构、派生类型、技术债五维清单、ROI 优先路线图、预防策略与度量指标等。
 
 ## 文件说明
 
@@ -14,7 +14,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 SKILL.md 的前置元数据决定触发条件：
 - **name**: 技能标识符，Claude Code 通过 `/code-refactor` 或技能匹配系统调用
-- **description**: 用于自动匹配 —— 当用户请求代码清理、重构审计、内联函数、技术债评估时自动触发
+- **description**: 用于自动匹配 —— 当用户请求代码审查、代码清理、代码简化、重构审计、内联函数、技术债评估时自动触发
 
 ## 修改技能
 

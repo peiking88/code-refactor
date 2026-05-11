@@ -1,25 +1,34 @@
 # 工作摘要
 
-**时间:** 2026-05-11 09:22:00
+**时间:** 2026-05-11 09:25:00
 
 ## 变更概要
 
-将技术债（techdebt）技能内容合并到 code-refactor 项目：
+合并 code-review-and-quality 和 code-simplification 技能的独特内容到 code-refactor 项目：
 
 ### SKILL.md
-- 更新前置元数据 description，新增技术债评估和路线图相关触发词
-- 新增 "Technical Debt Assessment" 章节，包含：债务五维清单（代码/架构/测试/文档/基础设施）、影响量化模型、ROI 优先路线图、增量迁移策略（Strangler Fig 模式）、预防策略（质量门禁 + 债务预算）、成功度量指标
-- Anti-Patterns 章节新增 3 条技术债相关反模式：大爆炸重写、无度量债务、100% 消除目标
-- Quick Checklist 新增 "Debt Assessment" 检查组
+- 前置元数据 description 新增 code review、code simplification 触发词
+- 新增 "Code Review Process" 章节：5步审查流程、多模型交叉审查、变更描述规范、审查速度、分歧处理层次、依赖纪律、诚实审查、常见辩解表、危险信号
+- Anti-Patterns 新增 2 条：Rubber-stamp review、仅检查测试结果
+- Quick Checklist 新增 "Review" 检查组和 "变更描述独立可理解" 检查项
+- Severity Labeling 新增 FYI 级别
+
+### references/typescript.md
+- 新增 "Simplification Examples" 章节：async 消除、条件赋值简化、数组构建简化、冗余布尔返回、React 条件渲染简化
+
+### references/python.md
+- 新增 "Simplification Examples" 章节：字典推导、列表推导、布尔返回简化、消除冗余 else
 
 ### evals.json
-- 新增 eval #7：技术债评估场景，验证五维清单、量化影响、ROI 路线图、预防策略、交叉引用现有方法论
+- 新增 eval #8：代码审查场景（测试优先审查、五轴审查、严重性标注、诚实审查、依赖检查）
+- 新增 eval #9：代码简化场景（简化模式应用、diff 展示、行为保持、权衡陈述）
 
 ### README.md / CLAUDE.md
-- 更新项目概述、触发条件、内容覆盖说明，反映技术债评估能力的合并
+- 更新项目概述、触发条件，反映代码审查和简化能力的合并
 
 ## 最近提交
 ```
+9e73336 合并技术债评估方法论到 code-refactor 技能
 710cf14 添加 README.md 项目说明文档
 bfc46af 初始化代码重构技能项目
 ```

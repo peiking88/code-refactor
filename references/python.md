@@ -472,3 +472,49 @@ class SlackDecorator(NotifierDecorator):
 notifier = SlackDecorator(SmsDecorator(EmailNotifier()))
 notifier.send("Deploy complete")
 ```
+
+## Simplification Examples
+
+Common patterns where Python code can be simplified without changing behavior:
+
+```python
+# SIMPLIFY: Verbose dictionary building
+# Before
+result = {}
+for item in items:
+    result[item.id] = item.name
+# After
+result = {item.id: item.name for item in items}
+
+# SIMPLIFY: Verbose list building
+# Before
+active_users = []
+for user in users:
+    if user.is_active:
+        active_users.append(user)
+# After
+active_users = [user for user in users if user.is_active]
+
+# SIMPLIFY: Redundant boolean return
+# Before
+def is_valid(data: str) -> bool:
+    if len(data) > 0 and len(data) < 100:
+        return True
+    return False
+# After
+def is_valid(data: str) -> bool:
+    return 0 < len(data) < 100
+
+# SIMPLIFY: Unnecessary else after return
+# Before
+def get_status(order: Order) -> str:
+    if order.is_paid:
+        return "paid"
+    else:
+        return "pending"
+# After
+def get_status(order: Order) -> str:
+    if order.is_paid:
+        return "paid"
+    return "pending"
+```

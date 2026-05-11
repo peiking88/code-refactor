@@ -456,3 +456,70 @@ class SlackDecorator extends NotifierDecorator {
 const notifier = new SlackDecorator(new SmsDecorator(new EmailNotifier()));
 notifier.send("Deploy complete");
 ```
+
+## Simplification Examples
+
+Common patterns where TypeScript/JavaScript code can be simplified without changing behavior:
+
+```typescript
+// SIMPLIFY: Unnecessary async wrapper
+// Before
+async function getUser(id: string): Promise<User> {
+  return await userService.findById(id);
+}
+// After
+function getUser(id: string): Promise<User> {
+  return userService.findById(id);
+}
+
+// SIMPLIFY: Verbose conditional assignment
+// Before
+let displayName: string;
+if (user.nickname) {
+  displayName = user.nickname;
+} else {
+  displayName = user.fullName;
+}
+// After
+const displayName = user.nickname || user.fullName;
+
+// SIMPLIFY: Manual array building
+// Before
+const activeUsers: User[] = [];
+for (const user of users) {
+  if (user.isActive) {
+    activeUsers.push(user);
+  }
+}
+// After
+const activeUsers = users.filter((user) => user.isActive);
+
+// SIMPLIFY: Redundant boolean return
+// Before
+function isValid(input: string): boolean {
+  if (input.length > 0 && input.length < 100) {
+    return true;
+  }
+  return false;
+}
+// After
+function isValid(input: string): boolean {
+  return input.length > 0 && input.length < 100;
+}
+
+// SIMPLIFY: Verbose conditional rendering (React/JSX)
+// Before
+function UserBadge({ user }: Props) {
+  if (user.isAdmin) {
+    return <Badge variant="admin">Admin</Badge>;
+  } else {
+    return <Badge variant="default">User</Badge>;
+  }
+}
+// After
+function UserBadge({ user }: Props) {
+  const variant = user.isAdmin ? 'admin' : 'default';
+  const label = user.isAdmin ? 'Admin' : 'User';
+  return <Badge variant={variant}>{label}</Badge>;
+}
+```

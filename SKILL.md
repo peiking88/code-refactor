@@ -1,6 +1,6 @@
 ---
 name: code-refactor
-description: "Systematic, data-driven code refactoring and technical debt remediation methodology with caller-count auditing, type-safety boundary analysis, debt inventory, ROI-based prioritization, and tradeoff evaluation. Use when the user wants to systematically refactor a module, inline single-caller helpers, collapse duplicate branches, bundle parameter objects, eliminate code smells with evidence, assess refactoring safety, inventory technical debt, or plan a prioritized remediation roadmap — especially in Python, TypeScript, or Java codebases. Trigger on requests like 'refactor this module', 'audit this file for refactoring', 'how should I clean this up systematically', 'is this too complex to maintain', 'what code smells are in this file', 'assess our technical debt', 'create a debt remediation plan', 'prioritize tech debt cleanup'."
+description: "Systematic, data-driven code refactoring, review, simplification, and technical debt remediation methodology with caller-count auditing, type-safety boundary analysis, five-axis code review, debt inventory, ROI-based prioritization, and tradeoff evaluation. Use when the user wants to systematically refactor a module, review code before merge, simplify verbose code, inline single-caller helpers, collapse duplicate branches, bundle parameter objects, eliminate code smells with evidence, assess refactoring safety, inventory technical debt, or plan a prioritized remediation roadmap — especially in Python, TypeScript, or Java codebases. Trigger on requests like 'refactor this module', 'review this code', 'simplify this code', 'audit this file for refactoring', 'how should I clean this up systematically', 'is this too complex to maintain', 'what code smells are in this file', 'assess our technical debt', 'create a debt remediation plan', 'prioritize tech debt cleanup'."
 compatibility: "security-and-hardening (for security axis of pre-refactor scan), performance-optimization (for bottleneck profiling)"
 ---
 
@@ -95,6 +95,94 @@ Prefix every finding with its severity so the reader knows what's required vs op
 | **Critical:** | Blocks merge — security, data loss, broken behavior |
 | **Nit:** | Minor, optional — formatting, style preferences |
 | **Optional:** / **Consider:** | Worth considering but not required |
+| **FYI** | Informational only — no action needed |
+
+---
+
+## Code Review Process
+
+Use this workflow when reviewing any change — your own, another agent's, or a teammate's.
+
+**Approval standard:** Approve when the change definitely improves overall code health. Don't block because it isn't perfect.
+
+### Review Steps
+
+1. **Understand context** — What does this change accomplish? What spec/task does it implement?
+2. **Review tests first** — Tests reveal intent. Do they test behavior (not implementation)? Are edge cases covered? Would they catch a regression?
+3. **Review implementation** — Walk through each file with the five axes (correctness, readability, architecture, security, performance)
+4. **Categorize findings** — Label every comment with severity (Critical / no prefix / Nit / Optional / FYI)
+5. **Verify the verification** — What tests ran? Build pass? Manual testing done? UI screenshots?
+
+### Multi-Model Review
+
+Different models have different blind spots. Use cross-review:
+
+```
+Model A writes code → Model B reviews → Model A addresses feedback → Human decides
+```
+
+### Change Descriptions
+
+Every commit needs a description that stands alone in version control history:
+
+- **First line**: Short, imperative, standalone. "Delete the FizzBuzz RPC" not "Deleting..."
+- **Body**: What changed, why, decisions made, links to context
+- **Anti-patterns**: "Fix bug", "Fix build", "Phase 1", "Moving code from A to B"
+
+### Review Speed
+
+- Respond within one business day (maximum, not target)
+- Fast individual feedback beats slow final approval
+- Large changes → ask the author to split rather than reviewing one massive diff
+
+### Handling Disagreements
+
+Apply this hierarchy when resolving disputes:
+
+1. **Technical facts and data** override opinions
+2. **Style guides** are absolute authority on style
+3. **Engineering principles** override personal preference
+4. **Codebase consistency** is acceptable if it doesn't degrade health
+
+### Dependency Discipline
+
+Before adding any dependency:
+
+1. Does the existing stack solve this? (Often it does.)
+2. How large is it? (Check bundle impact.)
+3. Is it actively maintained? (Last commit, open issues.)
+4. Known vulnerabilities? (`npm audit`, `pip audit`)
+5. Compatible license?
+
+Prefer standard library and existing utilities. Every dependency is a liability.
+
+### Honesty in Review
+
+- **Don't rubber-stamp.** "LGTM" without evidence of review helps no one.
+- **Don't soften real issues.** "This might be minor" when it's a production bug is dishonest.
+- **Quantify problems.** "This N+1 adds ~50ms per item" beats "this could be slow."
+- **Push back on clear problems.** Sycophancy is a failure mode.
+- **Accept override gracefully.** If the author has full context, defer to their judgment.
+
+### Common Rationalizations
+
+| Rationalization | Reality |
+|---|---|
+| "It works, that's good enough" | Unreadable/insecure code creates compounding debt |
+| "I wrote it, so I know it's correct" | Authors are blind to their own assumptions |
+| "We'll clean it up later" | Later never comes. The review is the quality gate |
+| "AI-generated code is probably fine" | AI code needs more scrutiny — it's confident even when wrong |
+| "The tests pass, so it's good" | Tests don't catch architecture, security, or readability issues |
+
+### Red Flags
+
+- PRs merged without review
+- "LGTM" without evidence of actual review
+- Review that only checks if tests pass (ignoring other axes)
+- Security changes without security-focused review
+- Large PRs that are "too big to review" (split them)
+- No regression tests with bug fix PRs
+- Accepting "I'll fix it later" — it never happens
 
 ---
 
@@ -427,6 +515,8 @@ Target: debt score -5%/month, bug rate -20%, deployment frequency +50%.
 - **Secondary key when primary exists**: Matching by name/slug/path when a stable id is available. Secondary keys can collide or change.
 - **Simplifying code you don't understand**: Chesterton's Fence applies. Check git blame. Accumulated complexity often has no reason, but sometimes it does — verify before you simplify.
 - **"I'll clean it up later"**: Deferred cleanup rarely happens. The review is the quality gate — clean up before merge, not after.
+- **Rubber-stamp review**: "LGTM" without evidence of review. Every change deserves actual scrutiny.
+- **Reviewing only test results**: Tests passing is necessary but not sufficient — architecture, security, and readability need separate evaluation.
 - **Big-bang rewrites**: Replacing a legacy system in one shot. Use Strangler Fig pattern instead — incremental migration with feature flags.
 - **Debt without metrics**: "We have a lot of tech debt" without quantification. No ROI calculation means no prioritization — measure first.
 - **100% remediation goal**: Eliminating all debt is neither possible nor desirable. Target the high-ROI items and maintain a debt budget.
@@ -455,6 +545,13 @@ Target: debt score -5%/month, bug rate -20%, deployment frequency +50%.
 - [ ] No dead code left behind
 - [ ] Diff is clean and reviewable — no unrelated changes mixed in
 - [ ] Each simplification would pass the "new teammate" test: would a new team member understand this faster than the original?
+- [ ] Change description stands alone in version control history
+
+### Review
+- [ ] Context understood — what this change does and why
+- [ ] Tests reviewed before implementation — they reveal intent and coverage
+- [ ] Findings labeled with severity (Critical / Nit / Optional / FYI)
+- [ ] Dependencies reviewed — no unnecessary additions
 
 ### Debt Assessment
 - [ ] Inventory across all 5 categories (Code, Architecture, Testing, Documentation, Infrastructure)

@@ -256,6 +256,67 @@
           "check": "Output references caller count audit, code smells, or other refactoring methodology from the skill for specific code-level items"
         }
       ]
+    },
+    {
+      "id": 8,
+      "prompt": "I just finished implementing a new feature — a payment processing module with 3 files changed, ~250 lines. Can you review it before I merge? The PR has unit tests and they all pass.",
+      "expected_output": "Apply the 5-step review process: understand context, review tests first, review implementation across five axes, categorize findings with severity labels, verify verification. Check dependencies, flag any issues honestly with severity prefixes.",
+      "files": [],
+      "assertions": [
+        {
+          "name": "tests-reviewed-first",
+          "description": "Reviews tests before implementation, checking they test behavior not just implementation",
+          "check": "Output reviews or asks about tests before reviewing the implementation code, or mentions reviewing tests first"
+        },
+        {
+          "name": "five-axis-review",
+          "description": "Reviews code across multiple axes (correctness, readability, architecture, security, performance)",
+          "check": "Output evaluates code across at least 3 of the 5 review axes: correctness, readability, architecture, security, performance"
+        },
+        {
+          "name": "severity-labeling",
+          "description": "Labels findings with severity prefixes (Critical, Nit, Optional, FYI)",
+          "check": "Output labels at least one finding with a severity prefix like Critical, Nit, Optional, Consider, or FYI"
+        },
+        {
+          "name": "honesty-in-review",
+          "description": "Does not rubber-stamp despite tests passing — looks beyond test results",
+          "check": "Output does not just approve because tests pass — it examines actual code quality, architecture, or other concerns beyond test results"
+        },
+        {
+          "name": "dependency-check",
+          "description": "Checks for unnecessary dependency additions",
+          "check": "Output asks about or checks new dependencies, or mentions dependency review"
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "prompt": "Simplify this Python code — it works but it's verbose. The function build_report in src/reporting/builder.py manually iterates to build dicts, has nested if-else for status labels, and wraps a simple lookup in an unnecessary helper function.",
+      "expected_output": "Apply simplification patterns: dict comprehension for manual dict building, direct mapping for status labels, inline the unnecessary wrapper. Preserve behavior, present diffs, state tradeoffs.",
+      "files": [],
+      "assertions": [
+        {
+          "name": "simplification-patterns",
+          "description": "Applies specific simplification patterns (comprehension, mapping, inline)",
+          "check": "Output applies at least one simplification pattern like dict comprehension, direct mapping/lookup, or inlining unnecessary wrappers"
+        },
+        {
+          "name": "before-after-diff",
+          "description": "Includes at least one BEFORE/AFTER code diff",
+          "check": "Output includes a code block showing BEFORE/AFTER comparison or diff-style lines with +/- markers"
+        },
+        {
+          "name": "behavior-preservation",
+          "description": "Confirms behavior is preserved by the simplification",
+          "check": "Output explicitly states behavior is preserved or verifies tests still pass after simplification"
+        },
+        {
+          "name": "states-tradeoffs",
+          "description": "States tradeoffs for the simplification",
+          "check": "Output mentions tradeoffs, costs, or what changes (even if positive) for the simplification"
+        }
+      ]
     }
   ]
 }
