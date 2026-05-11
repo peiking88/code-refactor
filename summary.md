@@ -1,29 +1,38 @@
 # 工作摘要
 
-**时间:** 2026-05-11 09:45:00
+**时间:** 2026-05-11 10:15:00
+**版本:** 1.1.0
 
-## 变更概要
+## 本次升级概要
 
-按渐次披露原则优化 SKILL.md 结构，将详细内容下放到 references/ 目录：
+### v1.1.0 变更（相比 v1.0.0）
 
-### SKILL.md（560行 → 413行，-26%）
-- Code Review Process（87行）→ `references/code-review.md`，主文件保留 3 行摘要+指针
-- Technical Debt Assessment（76行）→ `references/techdebt.md`，主文件保留 3 行摘要+指针
-- Anti-Patterns（22行）→ `references/anti-patterns.md`，主文件保留 7 条核心 + 指针
-- 文件顶部参考表新增 3 个 reference 文件的说明和触发时机
+1. **合并技术债评估方法论**（来自 techdebt 技能）
+   - 新增 Technical Debt Assessment 章节：五维债务清单、影响量化、ROI 路线图、Strangler Fig 迁移策略、预防策略、成功度量
 
-### references/ 新增文件
-- `code-review.md`（84行）：完整审查流程、多模型审查、变更描述、审查速度、分歧处理、依赖纪律、诚实审查、常见辩解表、危险信号
-- `techdebt.md`（73行）：五维债务清单、影响量化模板、ROI 路线图、Strangler Fig 迁移策略、预防策略、成功度量
-- `anti-patterns.md`（32行）：17 条反模式完整列表及说明
+2. **合并代码审查流程**（来自 code-review-and-quality 技能）
+   - 新增 Code Review Process 章节：5步审查、多模型审查、变更描述、分歧处理、依赖纪律、诚实审查、常见辩解表、危险信号
 
-### 基准测试结果（iteration-1）
-- With skill: 21/22 通过（95.5%）
-- Without skill: 8/22 通过（36.4%）
-- Delta: +59.1pp
+3. **合并代码简化示例**（来自 code-simplification 技能）
+   - references/typescript.md 新增 5 个简化示例
+   - references/python.md 新增 4 个简化示例
+
+4. **渐次披露结构优化**
+   - SKILL.md 从 560 行精简到 413 行（-26%）
+   - 新增 references/code-review.md（84行）、techdebt.md（73行）、anti-patterns.md（32行）
+
+5. **评估体系完善**
+   - evals 新增至 9 个场景，覆盖重构审计、测试重构、技术债、代码审查、代码简化
+   - 基准测试：with-skill 100%（22/22），without-skill 36.4%（8/22），delta +63.6pp
+
+### 卸载的冗余技能
+- techdebt（用户级命令）
+- code-simplification（用户级技能）
+- code-review-and-quality（用户级技能）
 
 ## 最近提交
 ```
+965288d 按渐次披露原则优化 SKILL.md 结构
 e0efa95 合并代码审查流程和简化示例到 code-refactor 技能
 9e73336 合并技术债评估方法论到 code-refactor 技能
 710cf14 添加 README.md 项目说明文档
