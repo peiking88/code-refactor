@@ -9,31 +9,38 @@
       "assertions": [
         {
           "name": "caller-count-audit",
-          "description": "Runs caller count audit before proposing changes"
+          "description": "Runs caller count audit before proposing changes",
+          "check": "Output mentions counting callers, call sites, or 'call count' for functions in order_service.py"
         },
         {
           "name": "identifies-long-method",
-          "description": "Identifies process_order as a Long Method (>50 lines, multiple responsibilities)"
+          "description": "Identifies process_order as a Long Method (>50 lines, multiple responsibilities)",
+          "check": "Output identifies process_order as a long method, mentions >50 or >200 lines, or cites the Long Method code smell"
         },
         {
           "name": "identifies-duplicated-code",
-          "description": "Identifies duplicated validation logic between create_order and update_order"
+          "description": "Identifies duplicated validation logic between create_order and update_order",
+          "check": "Output mentions duplicated validation logic shared between create_order and update_order"
         },
         {
           "name": "identifies-type-safety-issue",
-          "description": "Identifies raw dict access as a type safety boundary problem"
+          "description": "Identifies raw dict access as a type safety boundary problem",
+          "check": "Output mentions raw dict access, typed objects/dicts, type safety boundary, TypedDict, or 'parse_entry' pattern"
         },
         {
           "name": "before-after-diff",
-          "description": "Includes at least one BEFORE/AFTER code diff"
+          "description": "Includes at least one BEFORE/AFTER code diff",
+          "check": "Output includes a code block showing BEFORE/AFTER comparison or diff-style lines with +/- markers"
         },
         {
           "name": "states-tradeoffs",
-          "description": "Explicitly states what got better AND what got worse for each proposed change"
+          "description": "Explicitly states what got better AND what got worse for each proposed change",
+          "check": "Output explicitly mentions tradeoffs, costs, downsides, or 'what gets worse' for at least one proposed change"
         },
         {
           "name": "surgical-commit-plan",
-          "description": "Proposes a sequence of small, separate commits"
+          "description": "Proposes a sequence of small, separate commits",
+          "check": "Output proposes at least 2 separate commits or mentions surgical/small/separate commits for the refactoring"
         }
       ]
     },
@@ -45,147 +52,208 @@
       "assertions": [
         {
           "name": "inline-single-callers",
-          "description": "Identifies single-use helper functions as inline candidates"
+          "description": "Identifies single-use helper functions as inline candidates",
+          "check": "Output identifies single-use or single-caller functions and recommends inlining them"
         },
         {
           "name": "collapse-duplicate-branches",
-          "description": "Identifies 3-of-5 switch branches doing the same thing and proposes collapsing"
+          "description": "Identifies 3-of-5 switch branches doing the same thing and proposes collapsing",
+          "check": "Output identifies that multiple switch branches share the same pattern (serialize-then-wrap) and suggests collapsing them"
         },
         {
           "name": "type-intersection",
-          "description": "Suggests using type intersections/composition instead of duplicating fields"
+          "description": "Suggests using type intersections/composition instead of duplicating fields",
+          "check": "Output mentions type intersection, type composition, '&' operator, or deriving types instead of duplicating shared fields"
         },
         {
           "name": "before-after-diff",
-          "description": "Includes at least one BEFORE/AFTER code diff"
+          "description": "Includes at least one BEFORE/AFTER code diff",
+          "check": "Output includes a code block showing BEFORE/AFTER comparison or diff-style lines with +/- markers"
         },
         {
           "name": "states-tradeoffs",
-          "description": "Explicitly states tradeoffs for proposed changes"
+          "description": "Explicitly states tradeoffs for proposed changes",
+          "check": "Output explicitly mentions tradeoffs, costs, downsides, or 'what gets worse' for at least one proposed change"
         },
         {
           "name": "surgical-commit-plan",
-          "description": "Proposes a sequence of small, separate commits"
+          "description": "Proposes a sequence of small, separate commits",
+          "check": "Output proposes at least 2 separate commits or mentions surgical/small/separate commits for the refactoring"
         }
       ]
     },
     {
       "id": 3,
-      "prompt": "I'm reviewing a Java service \u2014 com.acme.payment.PaymentProcessor \u2014 that's become difficult to maintain. It has null checks nested 4 levels deep, validates shipping vs payment vs notification all in one 100-line method, and three different shipping strategies implemented as a long if-else chain. What's the right refactoring approach here?",
+      "prompt": "I'm reviewing a Java service — com.acme.payment.PaymentProcessor — that's become difficult to maintain. It has null checks nested 4 levels deep, validates shipping vs payment vs notification all in one 100-line method, and three different shipping strategies implemented as a long if-else chain. What's the right refactoring approach here?",
       "expected_output": "Convert nested conditionals to guard clauses, extract Chain of Responsibility for validation, apply Strategy pattern for shipping, split Large Class by responsibility",
       "files": [],
       "assertions": [
         {
           "name": "guard-clauses",
-          "description": "Proposes converting nested null checks to guard clauses / early returns"
+          "description": "Proposes converting nested null checks to guard clauses / early returns",
+          "check": "Output mentions guard clauses, early returns, or flattening/inverting nested conditionals for the null checks"
         },
         {
           "name": "chain-of-responsibility",
-          "description": "Suggests Chain of Responsibility for the multi-step validation logic"
+          "description": "Suggests Chain of Responsibility for the multi-step validation logic",
+          "check": "Output mentions Chain of Responsibility pattern or chained validators for the validation method"
         },
         {
           "name": "strategy-pattern",
-          "description": "Suggests Strategy pattern to replace the if-else shipping chain"
+          "description": "Suggests Strategy pattern to replace the if-else shipping chain",
+          "check": "Output mentions Strategy pattern or strategy interface/class for the shipping methods"
         },
         {
           "name": "large-class-split",
-          "description": "Identifies Large Class smell and proposes splitting by responsibility"
+          "description": "Identifies Large Class smell and proposes splitting by responsibility",
+          "check": "Output identifies Large Class smell or suggests splitting PaymentProcessor by responsibility (shipping, payment, notification)"
         },
         {
           "name": "five-axis-scan",
-          "description": "NEW SKILL ONLY: Includes a five-axis pre-refactoring assessment scan"
+          "description": "Includes a five-axis pre-refactoring assessment scan",
+          "check": "Output includes a pre-refactoring assessment covering at least 3 of: correctness, readability, architecture, security, performance"
         },
         {
           "name": "severity-labeling",
-          "description": "NEW SKILL ONLY: Uses severity labels (Critical/Nit/Optional) for findings"
+          "description": "Uses severity labels (Critical/Nit/Optional) for findings",
+          "check": "Output labels at least one finding with a severity prefix like Critical, Nit, or Optional"
         }
       ]
     },
     {
       "id": 4,
-      "prompt": "I refactored our order service and now the unit tests are failing \u2014 they were testing internal helper functions that I inlined. Should I update the tests to match the new structure? Also our test file is 800 lines with a lot of duplicated setup code, can we refactor that too while we're at it?",
+      "prompt": "I refactored our order service and now the unit tests are failing — they were testing internal helper functions that I inlined. Should I update the tests to match the new structure? Also our test file is 800 lines with a lot of duplicated setup code, can we refactor that too while we're at it?",
       "expected_output": "Warn that refactoring tests alongside production code breaks the safety net. Tests failing means either behavior changed (not refactoring) or tests were testing implementation details. Advise: revert if behavior changed, or separate test cleanup into its own dedicated pass. Do NOT refactor test file in same pass.",
       "files": [],
       "assertions": [
         {
           "name": "warns-against-test-refactor",
-          "description": "NEW SKILL: Explicitly warns NOT to refactor test files alongside production code"
+          "description": "Explicitly warns NOT to refactor test files alongside production code",
+          "check": "Output explicitly says not to refactor tests together with production code, or warns that doing so destroys the safety net"
         },
         {
           "name": "diagnoses-test-failure",
-          "description": "Diagnoses why tests broke: behavior change vs implementation-detail testing"
+          "description": "Diagnoses why tests broke: behavior change vs implementation-detail testing",
+          "check": "Output analyzes root cause: whether tests broke from actual behavior change or from testing implementation details"
         },
         {
           "name": "separate-pass-guidance",
-          "description": "Advises test cleanup in a separate, dedicated pass if needed"
+          "description": "Advises test cleanup in a separate, dedicated pass if needed",
+          "check": "Output recommends doing test cleanup in a dedicated, separate pass from production refactoring"
         },
         {
           "name": "behavior-preservation-check",
-          "description": "Checks whether behavior was actually preserved during the refactor"
+          "description": "Checks whether behavior was actually preserved during the refactor",
+          "check": "Output asks or verifies whether the refactoring preserved original external behavior"
         },
         {
           "name": "test-as-spec",
-          "description": "NEW SKILL: References tests as the specification of expected behavior"
+          "description": "References tests as the specification of expected behavior",
+          "check": "Output describes tests as the specification, contract, or definition of expected behavior"
         }
       ]
     },
     {
       "id": 5,
-      "prompt": "There's this weird null check in our Python data pipeline at src/pipeline/transform.py line 142 \u2014 it guards against a condition that I don't think can ever happen. The code works fine without it when I tested locally. Should I just remove it to simplify the flow?",
+      "prompt": "There's this weird null check in our Python data pipeline at src/pipeline/transform.py line 142 — it guards against a condition that I don't think can ever happen. The code works fine without it when I tested locally. Should I just remove it to simplify the flow?",
       "expected_output": "Apply Chesterton's Fence: check git blame for why the null check was added, verify it's truly unreachable before removing. Show the five-axis scan for this specific change. If it's genuinely dead code, flag it and ask before deleting.",
       "files": [],
       "assertions": [
         {
           "name": "chestertons-fence",
-          "description": "NEW SKILL: Mentions Chesterton's Fence by name or explains the concept"
+          "description": "Mentions Chesterton's Fence by name or explains the concept",
+          "check": "Output mentions 'Chesterton's Fence' or explains: don't remove code without understanding why it was added"
         },
         {
           "name": "git-blame-check",
-          "description": "NEW SKILL: Suggests checking git blame before removing the null check"
+          "description": "Suggests checking git blame before removing the null check",
+          "check": "Output recommends checking git blame, git log, or version history before removing the guard code"
         },
         {
           "name": "five-axis-scan",
-          "description": "NEW SKILL: Applies five-axis pre-refactoring scan to this specific change"
+          "description": "Applies five-axis pre-refactoring scan to this specific change",
+          "check": "Output applies a pre-refactoring assessment or five-axis scan to evaluate this specific null check removal"
         },
         {
           "name": "ask-before-delete",
-          "description": "NEW SKILL: Advises asking/confirming before deleting the guard code"
+          "description": "Advises asking/confirming before deleting the guard code",
+          "check": "Output advises explicitly asking or getting confirmation before deleting the null check"
         },
         {
           "name": "dead-code-hygiene",
-          "description": "Addresses dead code hygiene: lists what would be removed and asks confirmation"
+          "description": "Addresses dead code hygiene: lists what would be removed and asks confirmation",
+          "check": "Output describes a dead code identification process: list what to remove, then confirm before deleting"
         }
       ]
     },
     {
       "id": 6,
-      "prompt": "Our codebase has a utils/helpers.ts file that's become a dumping ground \u2014 there's formatDate, formatCurrency, parseDate, parseCurrency, and about 20 other functions. Some are used everywhere, some are used once, and a few appear to be unused. Also some functions take boolean flags like formatDate(date, true, false) which is impossible to understand at call sites. How should I approach cleaning this up?",
-      "expected_output": "Run caller count audit on every export, apply simplification patterns (boolean flags \u2192 options object, generic names \u2192 descriptive), identify dead code for deletion, inline single-callers, scope the cleanup to avoid touching unrelated code. Apply Rule of 500 if needed.",
+      "prompt": "Our codebase has a utils/helpers.ts file that's become a dumping ground — there's formatDate, formatCurrency, parseDate, parseCurrency, and about 20 other functions. Some are used everywhere, some are used once, and a few appear to be unused. Also some functions take boolean flags like formatDate(date, true, false) which is impossible to understand at call sites. How should I approach cleaning this up?",
+      "expected_output": "Run caller count audit on every export, apply simplification patterns (boolean flags → options object, generic names → descriptive), identify dead code for deletion, inline single-callers, scope the cleanup to avoid touching unrelated code. Apply Rule of 500 if needed.",
       "files": [],
       "assertions": [
         {
           "name": "caller-count-audit",
-          "description": "Runs caller count audit on every export in the helpers file"
+          "description": "Runs caller count audit on every export in the helpers file",
+          "check": "Output mentions counting callers, call sites, or auditing usage for each exported function"
         },
         {
           "name": "boolean-flag-pattern",
-          "description": "NEW SKILL: Identifies boolean parameter flags and suggests options objects or separate functions"
+          "description": "Identifies boolean parameter flags and suggests options objects or separate functions",
+          "check": "Output identifies boolean flag parameters and suggests options objects, named parameters, or separate functions"
         },
         {
           "name": "rule-of-500",
-          "description": "NEW SKILL: Mentions the Rule of 500 or suggests automation for large changes"
+          "description": "Mentions the Rule of 500 or suggests automation for large changes",
+          "check": "Output mentions 'Rule of 500', >500 lines threshold, or suggests automation/codemods for the large cleanup"
         },
         {
           "name": "dead-code-identification",
-          "description": "Identifies unused functions and proposes deletion"
+          "description": "Identifies unused functions and proposes deletion",
+          "check": "Output identifies unused or dead functions and proposes removing them after confirmation"
         },
         {
           "name": "scope-discipline",
-          "description": "NEW SKILL: Advises scoping cleanup to avoid touching unrelated code"
+          "description": "Advises scoping cleanup to avoid touching unrelated code",
+          "check": "Output advises limiting change scope or avoiding drive-by refactors of unrelated code"
         },
         {
           "name": "simplification-pattern-table",
-          "description": "NEW SKILL: References simplification patterns (structural/naming/redundancy)"
+          "description": "References simplification patterns (structural/naming/redundancy)",
+          "check": "Output categorizes problems using simplification patterns like boolean flags, naming issues, or redundancy patterns"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "Our team has been shipping features fast for the past year and technical debt has piled up. I can see duplicated validation logic in at least 6 places, our test coverage is around 35%, the OrderService class is 800 lines with 25 methods, we're still on React 16, and deployment is fully manual with no rollback procedure. Can you help us assess the debt and create a prioritized remediation plan?",
+      "expected_output": "Systematic debt inventory across all 5 categories (Code, Architecture, Testing, Documentation, Infrastructure) with quantified impact, ROI-based prioritized roadmap (quick wins / medium-term / long-term), and prevention strategy with quality gates",
+      "files": [],
+      "assertions": [
+        {
+          "name": "five-category-inventory",
+          "description": "Inventories debt across all 5 categories: Code, Architecture, Testing, Documentation, Infrastructure",
+          "check": "Output covers at least 4 of the 5 debt categories: Code, Architecture, Testing, Documentation, Infrastructure"
+        },
+        {
+          "name": "quantified-impact",
+          "description": "Quantifies debt impact in hours, cost, or frequency — not just qualitative descriptions",
+          "check": "Output includes numerical estimates for at least 2 debt items (hours, monthly cost, frequency, or similar quantified metrics)"
+        },
+        {
+          "name": "roi-prioritized-roadmap",
+          "description": "Creates a prioritized remediation roadmap based on ROI, not just severity",
+          "check": "Output presents a prioritized roadmap or action plan with at least 2 tiers (e.g., quick wins vs medium-term) and mentions ROI, effort, or savings for items"
+        },
+        {
+          "name": "prevention-strategy",
+          "description": "Recommends prevention strategy with quality gates or debt budget",
+          "check": "Output recommends quality gates, debt budget, CI checks, or similar prevention mechanisms to avoid future debt accumulation"
+        },
+        {
+          "name": "references-existing-methodology",
+          "description": "Cross-references existing refactoring methodology (code smells, caller audit, etc.)",
+          "check": "Output references caller count audit, code smells, or other refactoring methodology from the skill for specific code-level items"
         }
       ]
     }

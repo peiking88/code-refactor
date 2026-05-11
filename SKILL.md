@@ -1,6 +1,7 @@
 ---
 name: code-refactor
-description: "Systematic, evidence-based code review and refactoring methodology. Use this skill whenever the user asks to review code, clean up a module, refactor functions, inline helpers, simplify over-complex logic, improve type safety, eliminate code smells, audit internal structure, or assess code quality before merging — especially in Python, TypeScript, or Java codebases. Also trigger on requests like 'review this code', 'clean this up', 'refactor this', 'is this too complex', 'simplify this module', 'audit this file', 'how should I clean this up'."
+description: "Systematic, data-driven code refactoring and technical debt remediation methodology with caller-count auditing, type-safety boundary analysis, debt inventory, ROI-based prioritization, and tradeoff evaluation. Use when the user wants to systematically refactor a module, inline single-caller helpers, collapse duplicate branches, bundle parameter objects, eliminate code smells with evidence, assess refactoring safety, inventory technical debt, or plan a prioritized remediation roadmap — especially in Python, TypeScript, or Java codebases. Trigger on requests like 'refactor this module', 'audit this file for refactoring', 'how should I clean this up systematically', 'is this too complex to maintain', 'what code smells are in this file', 'assess our technical debt', 'create a debt remediation plan', 'prioritize tech debt cleanup'."
+compatibility: "security-and-hardening (for security axis of pre-refactor scan), performance-optimization (for bottleneck profiling)"
 ---
 
 # Code Refactor
@@ -336,6 +337,82 @@ Don't leave dead code lying around — it confuses future readers. But don't sil
 
 ---
 
+## Technical Debt Assessment
+
+When the scope extends beyond a single module to project-wide debt, use this framework to inventory, quantify, and prioritize remediation.
+
+### Debt Inventory
+
+Scan for debt across five categories. Code debt overlaps with the Code Smells section above; the other four are unique to project-level assessment.
+
+| Category | What to Scan | Quantify |
+|---|---|---|
+| **Code** | Duplicated logic, complex methods (>50 lines), deep nesting (>3 levels), god classes (>500 lines / >20 methods) | Lines duplicated, cyclomatic complexity, hotspot count |
+| **Architecture** | Missing/leaky abstractions, violated boundaries, circular dependencies, monolithic components | Component size, dependency violations, coupling metrics |
+| **Testing** | Untested paths, missing edge cases, no integration tests, brittle/flaky/slow tests | Coverage %, critical untested paths, test runtime |
+| **Documentation** | Undocumented public APIs, missing architecture diagrams, no onboarding guides | Undocumented public API count |
+| **Infrastructure** | Manual deployment steps, no rollback, missing monitoring, no performance baselines | Deployment time/failure rate |
+
+### Impact Quantification
+
+For each debt item, estimate real cost to justify remediation effort:
+
+| Dimension | Template | Example |
+|---|---|---|
+| **Velocity** | `N hours/bug × M bugs/month = monthly cost` | Duplicate validation in 5 files: 2h/bug × 10 bugs = 20h/month |
+| **Quality** | `bug rate × cost per bug (investigate + fix + test + deploy)` | Missing integration tests: 3 prod bugs/month × 9h each = 27h/month |
+| **Risk** | Critical (security/data loss) / High (outages) / Medium (slow delivery) / Low (style) | Outdated auth library: Critical |
+
+### Prioritized Remediation Roadmap
+
+Rank by ROI (savings ÷ effort), not by severity alone:
+
+| Tier | Timeframe | Criteria | Examples |
+|---|---|---|---|
+| **Quick Wins** | Week 1-2 | High value, low effort (< 16h), immediate ROI | Extract duplicate validation, add error monitoring, automate deployments |
+| **Medium-Term** | Month 1-3 | Moderate effort (40-100h), positive ROI within 3 months | Split god class, upgrade framework, add test coverage to critical paths |
+| **Long-Term** | Quarter 2-4 | Large effort (100h+), strategic value, positive ROI within 6 months | DDD adoption, comprehensive test suite, architecture modernization |
+
+For each item, state: `Effort: Nh | Savings: Nh/month | ROI: positive after X months`
+
+### Incremental Migration Strategy
+
+When replacing legacy code, use the Strangler Fig pattern — never big-bang rewrites:
+
+```
+Phase 1: Facade over legacy (new clean interface, legacy underneath)
+Phase 2: New implementation alongside legacy
+Phase 3: Gradual migration with feature flags
+Phase 4: Remove legacy path
+```
+
+Each phase is a separate deployable increment. If any phase fails, roll back to the previous phase.
+
+### Prevention Strategy
+
+**Automated Quality Gates** (pre-commit / CI):
+
+| Gate | Threshold |
+|---|---|
+| Cyclomatic complexity | Max 10 per function |
+| Duplication | Max 5% of codebase |
+| Test coverage (new code) | Min 80% |
+| Dependency audit | No high-severity vulnerabilities |
+| Performance regression | Max 10% degradation |
+
+**Debt Budget**: Allow max 2% monthly increase, require 5% quarterly reduction. Track with tooling (SonarQube, CodeCov, Dependabot).
+
+### Success Metrics
+
+| Period | Metrics |
+|---|---|
+| **Monthly** | Debt score trend, bug rate, deployment frequency, lead time, test coverage |
+| **Quarterly** | Architecture health score, developer satisfaction, performance benchmarks, security audit results |
+
+Target: debt score -5%/month, bug rate -20%, deployment frequency +50%.
+
+---
+
 ## Anti-Patterns
 
 - **Refactoring test code alongside production code**: Tests are the specification. If a test breaks during refactoring, either you changed behavior (not refactoring) or the test was testing implementation details (fix the test in a separate, dedicated pass).
@@ -350,6 +427,9 @@ Don't leave dead code lying around — it confuses future readers. But don't sil
 - **Secondary key when primary exists**: Matching by name/slug/path when a stable id is available. Secondary keys can collide or change.
 - **Simplifying code you don't understand**: Chesterton's Fence applies. Check git blame. Accumulated complexity often has no reason, but sometimes it does — verify before you simplify.
 - **"I'll clean it up later"**: Deferred cleanup rarely happens. The review is the quality gate — clean up before merge, not after.
+- **Big-bang rewrites**: Replacing a legacy system in one shot. Use Strangler Fig pattern instead — incremental migration with feature flags.
+- **Debt without metrics**: "We have a lot of tech debt" without quantification. No ROI calculation means no prioritization — measure first.
+- **100% remediation goal**: Eliminating all debt is neither possible nor desirable. Target the high-ROI items and maintain a debt budget.
 
 ---
 
@@ -375,3 +455,9 @@ Don't leave dead code lying around — it confuses future readers. But don't sil
 - [ ] No dead code left behind
 - [ ] Diff is clean and reviewable — no unrelated changes mixed in
 - [ ] Each simplification would pass the "new teammate" test: would a new team member understand this faster than the original?
+
+### Debt Assessment
+- [ ] Inventory across all 5 categories (Code, Architecture, Testing, Documentation, Infrastructure)
+- [ ] Each item quantified with effort estimate and monthly cost/savings
+- [ ] Roadmap prioritized by ROI, not just severity
+- [ ] Prevention gates defined for future debt control
