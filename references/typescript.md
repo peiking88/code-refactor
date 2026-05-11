@@ -457,6 +457,102 @@ const notifier = new SlackDecorator(new SmsDecorator(new EmailNotifier()));
 notifier.send("Deploy complete");
 ```
 
+## Exception Audit Examples
+
+Three categories of exception misuse with TypeScript-specific Before/After.
+
+### Category 1: Missing Exception Handling
+
+```typescript
+// BEFORE: fetch with no error boundary — unhandled rejection crashes the app
+async function loadConfig(url: string): Promise<Config> {
+    const res = await fetch(url);
+    return res.json();
+}
+
+// AFTER: handle the real failure modes
+async function loadConfig(url: string): Promise<Config> {
+    let res: Response;
+    try {
+        res = await fetch(url, { signal: AbortSignal.timeout(5000) });
+    } catch (e) {
+        throw new ConfigError(`Network error loading config from ${url}`, { cause: e });
+    }
+    if (!res.ok) {
+        throw new ConfigError(`Config endpoint returned ${res.status}`, { cause: new Error(`${res.status}`) });
+    }
+    return res.json() as Promise<Config>;
+}
+```
+
+### Category 2: Unnecessary Exception Handling
+
+```typescript
+// BEFORE: exception-driven control flow (slow, unclear intent)
+function getUserName(userId: string): string {
+    try {
+        return db[userId].name;
+    } catch {
+        return "Unknown";
+    }
+}
+
+// AFTER: conditional check — fast, clear intent
+function getUserName(userId: string): string {
+    return db[userId]?.name ?? "Unknown";
+}
+```
+
+```typescript
+// BEFORE: try/catch around code that cannot throw
+function formatCurrency(amount: number): string {
+    try {
+        return `$${amount.toFixed(2)}`;
+    } catch {
+        return "$0.00";
+    }
+}
+
+// AFTER: toFixed never throws on a number — remove the unnecessary guard
+function formatCurrency(amount: number): string {
+    return `$${amount.toFixed(2)}`;
+}
+```
+
+### Category 3: Wrong Exception Type
+
+```typescript
+// BEFORE: generic Error for argument validation
+function setAge(age: number): void {
+    if (age < 0) throw new Error("Age cannot be negative");
+}
+
+// AFTER: TypeError for type/domain violations (or a custom domain error)
+function setAge(age: number): void {
+    if (age < 0) throw new TypeError(`Age cannot be negative: ${age}`);
+}
+```
+
+```typescript
+// BEFORE: lost cause chain — root cause destroyed
+function loadUsers(path: string): User[] {
+    try {
+        return parseUserJson(Deno.readTextFileSync(path));
+    } catch {
+        throw new AppError("Failed to load users");  // original error lost
+    }
+}
+
+// AFTER: chain the original exception
+function loadUsers(path: string): User[] {
+    try {
+        return parseUserJson(Deno.readTextFileSync(path));
+    } catch (e) {
+        throw new AppError(`Failed to load users from ${path}`, { cause: e });
+    }
+}
+```
+
 ## Simplification Examples
 
 Common patterns where TypeScript/JavaScript code can be simplified without changing behavior:

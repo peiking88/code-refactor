@@ -10,6 +10,7 @@ Scan for debt across five categories:
 |---|---|---|
 | **Code** | Duplicated logic, complex methods (>50 lines), deep nesting (>3 levels), god classes (>500 lines / >20 methods) | Lines duplicated, cyclomatic complexity, hotspot count |
 | **Architecture** | Missing/leaky abstractions, violated boundaries, circular dependencies, monolithic components | Component size, dependency violations, coupling metrics |
+| **Exception** | Missing try/catch on I/O and network calls, swallowed exceptions, overly broad catch, wrong exception types, exception-driven control flow | Bare catch count, generic-exception count, unhandled-failure-point count |
 | **Testing** | Untested paths, missing edge cases, no integration tests, brittle/flaky/slow tests | Coverage %, critical untested paths, test runtime |
 | **Documentation** | Undocumented public APIs, missing architecture diagrams, no onboarding guides | Undocumented public API count |
 | **Infrastructure** | Manual deployment steps, no rollback, missing monitoring, no performance baselines | Deployment time/failure rate |
@@ -60,6 +61,9 @@ Each phase is a separate deployable increment. If any phase fails, roll back to 
 | Test coverage (new code) | Min 80% |
 | Dependency audit | No high-severity vulnerabilities |
 | Performance regression | Max 10% degradation |
+| Bare / generic catch | Zero allowed — all catch blocks must specify a concrete exception type |
+| Swallowed exceptions | Zero allowed — every catch block must log, rethrow, or recover |
+| Unhandled I/O / network paths | Zero — every file, network, DB, or external API call must have error boundary |
 
 **Debt Budget**: Allow max 2% monthly increase, require 5% quarterly reduction. Track with tooling (SonarQube, CodeCov, Dependabot).
 

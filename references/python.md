@@ -473,6 +473,100 @@ notifier = SlackDecorator(SmsDecorator(EmailNotifier()))
 notifier.send("Deploy complete")
 ```
 
+## Exception Audit Examples
+
+Three categories of exception misuse with Python-specific Before/After.
+
+### Category 1: Missing Exception Handling
+
+```python
+# BEFORE: file read with no error boundary — crashes on missing file
+def load_config(path: str) -> dict:
+    with open(path) as f:
+        return json.load(f)
+
+# AFTER: handle the real failure modes
+def load_config(path: str) -> dict:
+    try:
+        with open(path) as f:
+            return json.load(f)
+    except FileNotFoundError:
+        logger.warning("Config not found at %s, using defaults", path)
+        return DEFAULT_CONFIG
+    except json.JSONDecodeError as e:
+        raise ConfigError(f"Invalid JSON in {path}: {e}") from e
+```
+
+### Category 2: Unnecessary Exception Handling
+
+```python
+# BEFORE: exception-driven control flow (slow, unclear intent)
+def get_user_name(user_id: str) -> str:
+    try:
+        user = db[user_id]
+        return user["name"]
+    except KeyError:
+        return "Unknown"
+
+# AFTER: conditional check — fast, clear intent
+def get_user_name(user_id: str) -> str:
+    user = db.get(user_id)
+    return user.get("name", "Unknown") if user else "Unknown"
+```
+
+```python
+# BEFORE: swallowed exception — silent failure
+def process_batch(items: list[str]) -> list[str]:
+    results = []
+    for item in items:
+        try:
+            results.append(transform(item))
+        except Exception:
+            pass  # silently skips bad items — data loss with no signal
+    return results
+
+# AFTER: collect errors, report them
+def process_batch(items: list[str]) -> tuple[list[str], list[str]]:
+    results, errors = [], []
+    for item in items:
+        try:
+            results.append(transform(item))
+        except ValueError as e:
+            logger.error("Failed to transform %r: %s", item, e)
+            errors.append(item)
+    return results, errors
+```
+
+### Category 3: Wrong Exception Type
+
+```python
+# BEFORE: generic Exception for argument validation
+def set_age(age: int) -> None:
+    if age < 0:
+        raise Exception("Age cannot be negative")
+
+# AFTER: use ValueError — the standard type for invalid arguments
+def set_age(age: int) -> None:
+    if age < 0:
+        raise ValueError(f"Age cannot be negative: {age}")
+```
+
+```python
+# BEFORE: lost cause chain — root cause destroyed
+def load_users(path: str) -> list[User]:
+    try:
+        return [User(**row) for row in csv.DictReader(open(path))]
+    except Exception:
+        raise AppError("Failed to load users")
+
+# AFTER: chain the original exception
+def load_users(path: str) -> list[User]:
+    try:
+        return [User(**row) for row in csv.DictReader(open(path))]
+    except (FileNotFoundError, KeyError) as e:
+        raise AppError(f"Failed to load users from {path}") from e
+```
+
 ## Simplification Examples
 
 Common patterns where Python code can be simplified without changing behavior:

@@ -1,39 +1,27 @@
 # 工作摘要
 
-**时间:** 2026-05-11 10:15:00
-**版本:** 1.1.0
+**时间:** 2026-05-11 11:45:00
+**版本:** 1.2.0
 
 ## 本次升级概要
 
-### v1.1.0 变更（相比 v1.0.0）
+### v1.2.0 变更（相比 v1.1.0）
 
-1. **合并技术债评估方法论**（来自 techdebt 技能）
-   - 新增 Technical Debt Assessment 章节：五维债务清单、影响量化、ROI 路线图、Strangler Fig 迁移策略、预防策略、成功度量
+1. **新增异常审计方法论**
+   - SKILL.md 新增 Exception Audit 章节：三类异常问题的决策框架（该用未用、不该用却用、异常类使用不当）
+   - 每类包含操作风险表和决策表，直接指导诊断和修复
 
-2. **合并代码审查流程**（来自 code-review-and-quality 技能）
-   - 新增 Code Review Process 章节：5步审查、多模型审查、变更描述、分歧处理、依赖纪律、诚实审查、常见辩解表、危险信号
+2. **语言级 Before/After 示例**
+   - references/python.md：4 组异常示例（文件读取、异常驱动控制流、吞没异常、错误类型/丢失原因链）
+   - references/typescript.md：4 组异常示例（网络请求、异常驱动控制流、不必要的 try/catch、错误类型/丢失原因链）
+   - references/java.md：4 组异常示例（文件读取、空指针替代、批量吞没异常、错误类型/丢失原因链）
 
-3. **合并代码简化示例**（来自 code-simplification 技能）
-   - references/typescript.md 新增 5 个简化示例
-   - references/python.md 新增 4 个简化示例
+3. **技术债框架增强**
+   - techdebt.md 债务清单新增 Exception 维度：裸 catch 计数、泛型异常计数、未处理失败点计数
+   - 质量门禁新增 3 项异常检查：裸/泛型 catch 零容忍、吞没异常零容忍、I/O 网络路径错误边界
 
-4. **渐次披露结构优化**
-   - SKILL.md 从 560 行精简到 413 行（-26%）
-   - 新增 references/code-review.md（84行）、techdebt.md（73行）、anti-patterns.md（32行）
+4. **异常反模式条目**
+   - anti-patterns.md 新增 7 条异常反模式：裸 catch、异常驱动控制流、过度宽泛 catch、错误异常类型、丢失原因链、构造函数吞没、无退避重试
 
-5. **评估体系完善**
-   - evals 新增至 9 个场景，覆盖重构审计、测试重构、技术债、代码审查、代码简化
-   - 基准测试：with-skill 100%（22/22），without-skill 36.4%（8/22），delta +63.6pp
-
-### 卸载的冗余技能
-- techdebt（用户级命令）
-- code-simplification（用户级技能）
-- code-review-and-quality（用户级技能）
-
-## 最近提交
-```
-965288d 按渐次披露原则优化 SKILL.md 结构
-e0efa95 合并代码审查流程和简化示例到 code-refactor 技能
-9e73336 合并技术债评估方法论到 code-refactor 技能
-710cf14 添加 README.md 项目说明文档
-```
+5. **触发词更新**
+   - SKILL.md description 新增异常审计触发词：audit exception handling、check exception usage、find missing try/catch

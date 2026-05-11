@@ -1,6 +1,6 @@
 ---
 name: code-refactor
-description: "Systematic, data-driven code refactoring, review, simplification, and technical debt remediation methodology with caller-count auditing, type-safety boundary analysis, five-axis code review, debt inventory, ROI-based prioritization, and tradeoff evaluation. Use when the user wants to systematically refactor a module, review code before merge, simplify verbose code, inline single-caller helpers, collapse duplicate branches, bundle parameter objects, eliminate code smells with evidence, assess refactoring safety, inventory technical debt, or plan a prioritized remediation roadmap — especially in Python, TypeScript, or Java codebases. Trigger on requests like 'refactor this module', 'review this code', 'simplify this code', 'audit this file for refactoring', 'how should I clean this up systematically', 'is this too complex to maintain', 'what code smells are in this file', 'assess our technical debt', 'create a debt remediation plan', 'prioritize tech debt cleanup'."
+description: "Systematic, data-driven code refactoring, review, simplification, exception auditing, and technical debt remediation methodology with caller-count auditing, type-safety boundary analysis, five-axis code review, exception audit (missing handlers, unnecessary catches, wrong exception types), debt inventory, ROI-based prioritization, and tradeoff evaluation. Use when the user wants to systematically refactor a module, review code before merge, simplify verbose code, audit exception handling, inline single-caller helpers, collapse duplicate branches, bundle parameter objects, eliminate code smells with evidence, assess refactoring safety, inventory technical debt, or plan a prioritized remediation roadmap — especially in Python, TypeScript, or Java codebases. Trigger on requests like 'refactor this module', 'review this code', 'simplify this code', 'audit this file for refactoring', 'audit exception handling', 'check exception usage', 'find missing try/catch', 'how should I clean this up systematically', 'is this too complex to maintain', 'what code smells are in this file', 'assess our technical debt', 'create a debt remediation plan', 'prioritize tech debt cleanup'."
 compatibility: "security-and-hardening (for security axis of pre-refactor scan), performance-optimization (for bottleneck profiling)"
 ---
 
@@ -17,7 +17,7 @@ Evidence-based code review and refactoring methodology. This file covers languag
 | Technical debt framework | `references/techdebt.md` | Assessing project-wide debt |
 | Anti-patterns (full list) | `references/anti-patterns.md` | Encountering anti-patterns |
 
-Language reference files cover: type safety boundaries, all 10 code smells with Before/After examples, parameter objects, collapsing branches, design patterns, and simplification examples.
+Language reference files cover: type safety boundaries, all 10 code smells with Before/After examples, exception audit examples (missing handlers, unnecessary catches, wrong types), parameter objects, collapsing branches, design patterns, and simplification examples.
 
 ---
 
@@ -167,6 +167,95 @@ The 10 code smells below have language-specific Before/After examples in the ref
 | 8 | Dead Code | Unused functions, imports, commented-out blocks | Delete (git remembers) |
 | 9 | Large Class | >10 public methods spanning multiple responsibilities | Split by responsibility axis |
 | 10 | Inappropriate Intimacy | `a.b.c.d` chained access through nested objects | Single public method on owning object |
+
+---
+
+## Exception Audit
+
+Three categories of exception misuse, each with a decision table for diagnosis and fix strategy.
+
+### Category 1: Missing Exception Handling (该用而未使用)
+
+Operations that can fail but have no error boundary — failures silently corrupt state or crash unexpectedly.
+
+**Where to look:**
+
+| Operation Type | Risk | Correct Approach |
+|---|---|---|
+| File I/O (read/write/delete) | File missing, permission denied, disk full | Wrap in try/catch; handle `FileNotFoundError` / `IOException` |
+| Network calls (HTTP, RPC, DB) | Timeout, connection refused, 5xx | Wrap in try/catch; retry with backoff or fail gracefully |
+| Parsing / deserialization | Malformed input, schema mismatch | Validate before parse; catch parse errors; never assume well-formed |
+| External resource access | Resource unavailable, rate-limited | Check availability; catch access errors; provide fallback |
+| Type coercion / casting | Invalid cast, null dereference | Validate before cast; use safe parse (TryParse / parse_or_none) |
+| State transitions | Invalid state for operation | Guard clause with explicit error; don't silently skip |
+
+**Decision table — does this code need exception handling?**
+
+| Condition | Verdict |
+|---|---|
+| Code touches external system (file, network, DB, API) | **Yes** — wrap in error boundary |
+| Code processes user or external input | **Yes** — validate + catch parse errors |
+| Code is pure logic with validated inputs | **No** — let it fail fast on programmer error |
+| Code is a constructor / initializer | **Yes** — catch and rethrow with context |
+| Code runs in a background task / event loop | **Yes** — uncaught errors kill the process silently |
+
+### Category 2: Unnecessary Exception Handling (不该用却使用)
+
+Exception handling that adds complexity without protecting against real failure — often masking a logic problem.
+
+| Anti-Pattern | Signal | Fix |
+|---|---|---|
+| Bare try/catch around pure code | The body cannot throw | Remove the try/catch entirely |
+| Catching only to re-throw | `catch (e) { throw e; }` or equivalent | Remove catch; let it propagate naturally |
+| Exception-driven control flow | Using try/catch instead of `if`/`containsKey`/`getOrDefault` | Replace with conditional check |
+| Overly broad catch | `catch (Exception)` / `except Exception:` wrapping specific operations | Catch the specific exception type |
+| Swallowed exceptions | `catch (_) {}` or `except: pass` | At minimum log the error; usually fix the root cause |
+| Try/catch in hot loop | Exception handling per iteration in a tight loop | Validate before loop, or batch error handling |
+
+**Decision table — should this try/catch exist?**
+
+| Condition | Verdict |
+|---|---|
+| The catch block is empty or only re-throws | **Remove** — no value added |
+| The try body is pure logic (no I/O, no parsing) | **Remove** — programmer errors should fail fast |
+| The catch catches `Exception` but only one specific type can occur | **Narrow** — catch only the specific type |
+| The catch replaces exception-driven control flow | **Replace** — use conditional logic instead |
+| The catch handles a real failure mode with recovery | **Keep** — this is correct usage |
+
+### Category 3: Wrong Exception Type (异常类使用不当)
+
+Using a generic or incorrect exception type destroys diagnostic information and prevents callers from handling errors appropriately.
+
+**Hierarchy of exception specificity (all three languages):**
+
+```
+Most specific (correct)  →  Least specific (wrong)
+─────────────────────────────────────────────────
+FileNotFoundError            Exception / Throwable
+ValueError / TypeError       RuntimeException
+CustomDomainError            Error
+```
+
+**Decision table — is the exception type correct?**
+
+| Scenario | Wrong Type | Right Type |
+|---|---|---|
+| Invalid argument from caller | `Exception` | `ValueError` (Python) / `TypeError` (TS) / `IllegalArgumentException` (Java) |
+| Required resource not found | `Exception` | `FileNotFoundError` / `NoSuchElementException` |
+| Operation not valid for current state | `Exception` | `IllegalStateException` (Java/TS) / custom state error |
+| Feature not yet implemented | `Exception` | `NotImplementedError` (Python) / `Error('not implemented')` (TS) |
+| External service failure | `Exception` | Custom `ServiceUnavailableError` with retry hint |
+| Auth / permission failure | `Exception` | `PermissionError` / `ForbiddenError` with context |
+| Parsing / format error | `Exception` | `ValueError` (Python) / `SyntaxError` (TS) / custom parse error |
+
+**Rule: catch → rethrow must preserve context.** Never catch a specific exception and throw a generic one. If you wrap, chain the original:
+
+```
+BAD:  catch (IOException e) { throw new RuntimeException("Failed"); }     // lost stack trace
+GOOD: catch (IOException e) { throw new DataLoadError("Failed", e); }     // chained cause
+```
+
+Language-specific Before/After examples for all three categories: see the reference files (`references/python.md`, `references/typescript.md`, `references/java.md`).
 
 ---
 

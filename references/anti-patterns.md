@@ -25,6 +25,16 @@ Comprehensive list of refactoring and code review anti-patterns. Each entry incl
 - **Rubber-stamp review**: "LGTM" without evidence of review. Every change deserves actual scrutiny.
 - **Reviewing only test results**: Tests passing is necessary but not sufficient — architecture, security, and readability need separate evaluation.
 
+## Exception Anti-Patterns
+
+- **Bare catch / except pass**: Catching an exception and doing nothing. The failure is invisible — it corrupts state silently and shows up as a mysterious bug downstream. At minimum log the error; usually fix the root cause.
+- **Exception-driven control flow**: Using try/catch to check existence or match conditions instead of conditional logic. Example: `try { obj.method(); } catch (NullPointer) { ... }` instead of `if (obj != null)`. Exceptions are 100-1000x slower than conditionals and obscure intent.
+- **Overly broad catch**: `catch (Exception)` / `except Exception:` wrapping code that can only throw one specific type. This catches programmer errors (bugs) that should crash fast, masking real problems.
+- **Wrong exception type**: Throwing `Exception` when `ValueError` / `IllegalArgumentException` is correct. Callers cannot discriminate — they must catch everything or nothing.
+- **Lost cause chain**: Catching an exception and throwing a new one without chaining the original: `catch (IOError e) { throw new AppError("failed"); }`. The stack trace and root cause are destroyed. Always pass the original as the cause.
+- **Catching in constructors to swallow**: Constructor catches and ignores validation errors, leaving the object in an invalid state. Fail in the constructor — don't create broken objects.
+- **Retry without backoff**: Catching a transient error and immediately retrying in a tight loop. This hammers a struggling service. Use exponential backoff with jitter and a max retry count.
+
 ## Technical Debt Anti-Patterns
 
 - **Big-bang rewrites**: Replacing a legacy system in one shot. Use Strangler Fig pattern instead — incremental migration with feature flags.

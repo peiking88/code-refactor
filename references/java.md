@@ -226,6 +226,117 @@ class OrderProcessor {
 }
 ```
 
+## Exception Audit Examples
+
+Three categories of exception misuse with Java-specific Before/After.
+
+### Category 1: Missing Exception Handling
+
+```java
+// BEFORE: file read with no error boundary — IOException propagates unhandled
+String loadConfig(String path) {
+    return Files.readString(Path.of(path));
+}
+
+// AFTER: handle the real failure modes
+String loadConfig(String path) {
+    try {
+        return Files.readString(Path.of(path));
+    } catch (NoSuchFileException e) {
+        logger.warn("Config not found at {}, using defaults", path);
+        return DEFAULT_CONFIG;
+    } catch (IOException e) {
+        throw new ConfigException("Failed to read config: " + path, e);
+    }
+}
+```
+
+### Category 2: Unnecessary Exception Handling
+
+```java
+// BEFORE: exception-driven control flow (slow, unclear intent)
+String getUserName(String userId) {
+    try {
+        return db.get(userId).getName();
+    } catch (NullPointerException e) {
+        return "Unknown";
+    }
+}
+
+// AFTER: null check — fast, clear intent
+String getUserName(String userId) {
+    var user = db.get(userId);
+    return user != null ? user.getName() : "Unknown";
+}
+```
+
+```java
+// BEFORE: bare catch in a batch loop — swallows errors silently
+List<String> processBatch(List<String> items) {
+    var results = new ArrayList<String>();
+    for (String item : items) {
+        try {
+            results.add(transform(item));
+        } catch (Exception e) {
+            // silently skipped — data loss with no signal
+        }
+    }
+    return results;
+}
+
+// AFTER: collect errors, report them
+List<String> processBatch(List<String> items) {
+    var results = new ArrayList<String>();
+    var errors = new ArrayList<String>();
+    for (String item : items) {
+        try {
+            results.add(transform(item));
+        } catch (IllegalArgumentException e) {
+            logger.error("Failed to transform {}: {}", item, e.getMessage());
+            errors.add(item);
+        }
+    }
+    if (!errors.isEmpty()) {
+        logger.warn("Batch processing had {} failures out of {} items", errors.size(), items.size());
+    }
+    return results;
+}
+```
+
+### Category 3: Wrong Exception Type
+
+```java
+// BEFORE: generic RuntimeException for argument validation
+void setAge(int age) {
+    if (age < 0) throw new RuntimeException("Age cannot be negative");
+}
+
+// AFTER: IllegalArgumentException — the standard type for invalid arguments
+void setAge(int age) {
+    if (age < 0) throw new IllegalArgumentException("Age cannot be negative: " + age);
+}
+```
+
+```java
+// BEFORE: lost cause chain — root cause destroyed
+List<User> loadUsers(String path) {
+    try {
+        return parseUsers(Files.readString(Path.of(path)));
+    } catch (IOException e) {
+        throw new AppException("Failed to load users");  // original cause lost
+    }
+}
+
+// AFTER: chain the original exception
+List<User> loadUsers(String path) {
+    try {
+        return parseUsers(Files.readString(Path.of(path)));
+    } catch (IOException e) {
+        throw new AppException("Failed to load users from " + path, e);
+    }
+}
+```
+
 ## Parameter Objects & Type Derivation
 
 ```java
