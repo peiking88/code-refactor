@@ -8,7 +8,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 文件说明
 
-- `SKILL.md` — 技能主文件（前置元数据: name=code-refactor）
+- `SKILL.md` — 技能主文件（前置元数据: name=code-refactor），按渐次披露原则组织
+- `references/` — 按需加载的详细内容：语言级示例（python/typescript/java）、审查流程（code-review）、技术债框架（techdebt）、反模式（anti-patterns）
 
 ## 技能工作原理
 

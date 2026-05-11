@@ -6,15 +6,18 @@ compatibility: "security-and-hardening (for security axis of pre-refactor scan),
 
 # Code Refactor
 
-Evidence-based code review and refactoring methodology. This file covers language-agnostic principles, workflow, and decision frameworks. **For language-specific code examples, read the corresponding reference file:**
+Evidence-based code review and refactoring methodology. This file covers language-agnostic principles, workflow, and decision frameworks. **For detailed content, read the corresponding reference file:**
 
-| Language | Reference |
-|---|---|
-| Python | `references/python.md` |
-| TypeScript | `references/typescript.md` |
-| Java | `references/java.md` |
+| Topic | Reference | When to Read |
+|---|---|---|
+| Python examples | `references/python.md` | Working in Python |
+| TypeScript examples | `references/typescript.md` | Working in TypeScript |
+| Java examples | `references/java.md` | Working in Java |
+| Code review process | `references/code-review.md` | Reviewing code before merge |
+| Technical debt framework | `references/techdebt.md` | Assessing project-wide debt |
+| Anti-patterns (full list) | `references/anti-patterns.md` | Encountering anti-patterns |
 
-Read the reference file for the language you're working in when you need concrete syntax for a pattern. The reference files cover: type safety boundaries, all 10 code smells with Before/After examples, parameter objects, collapsing branches, and design patterns (Strategy, Chain of Responsibility).
+Language reference files cover: type safety boundaries, all 10 code smells with Before/After examples, parameter objects, collapsing branches, design patterns, and simplification examples.
 
 ---
 
@@ -101,88 +104,11 @@ Prefix every finding with its severity so the reader knows what's required vs op
 
 ## Code Review Process
 
-Use this workflow when reviewing any change — your own, another agent's, or a teammate's.
+5-step review: understand context → review tests first → review implementation → categorize findings → verify verification. Use severity labels (Critical / Nit / Optional / FYI). Approve when the change definitely improves overall code health.
 
-**Approval standard:** Approve when the change definitely improves overall code health. Don't block because it isn't perfect.
+**Core rules:** Don't rubber-stamp. Don't soften real issues. Check dependencies before adding any.
 
-### Review Steps
-
-1. **Understand context** — What does this change accomplish? What spec/task does it implement?
-2. **Review tests first** — Tests reveal intent. Do they test behavior (not implementation)? Are edge cases covered? Would they catch a regression?
-3. **Review implementation** — Walk through each file with the five axes (correctness, readability, architecture, security, performance)
-4. **Categorize findings** — Label every comment with severity (Critical / no prefix / Nit / Optional / FYI)
-5. **Verify the verification** — What tests ran? Build pass? Manual testing done? UI screenshots?
-
-### Multi-Model Review
-
-Different models have different blind spots. Use cross-review:
-
-```
-Model A writes code → Model B reviews → Model A addresses feedback → Human decides
-```
-
-### Change Descriptions
-
-Every commit needs a description that stands alone in version control history:
-
-- **First line**: Short, imperative, standalone. "Delete the FizzBuzz RPC" not "Deleting..."
-- **Body**: What changed, why, decisions made, links to context
-- **Anti-patterns**: "Fix bug", "Fix build", "Phase 1", "Moving code from A to B"
-
-### Review Speed
-
-- Respond within one business day (maximum, not target)
-- Fast individual feedback beats slow final approval
-- Large changes → ask the author to split rather than reviewing one massive diff
-
-### Handling Disagreements
-
-Apply this hierarchy when resolving disputes:
-
-1. **Technical facts and data** override opinions
-2. **Style guides** are absolute authority on style
-3. **Engineering principles** override personal preference
-4. **Codebase consistency** is acceptable if it doesn't degrade health
-
-### Dependency Discipline
-
-Before adding any dependency:
-
-1. Does the existing stack solve this? (Often it does.)
-2. How large is it? (Check bundle impact.)
-3. Is it actively maintained? (Last commit, open issues.)
-4. Known vulnerabilities? (`npm audit`, `pip audit`)
-5. Compatible license?
-
-Prefer standard library and existing utilities. Every dependency is a liability.
-
-### Honesty in Review
-
-- **Don't rubber-stamp.** "LGTM" without evidence of review helps no one.
-- **Don't soften real issues.** "This might be minor" when it's a production bug is dishonest.
-- **Quantify problems.** "This N+1 adds ~50ms per item" beats "this could be slow."
-- **Push back on clear problems.** Sycophancy is a failure mode.
-- **Accept override gracefully.** If the author has full context, defer to their judgment.
-
-### Common Rationalizations
-
-| Rationalization | Reality |
-|---|---|
-| "It works, that's good enough" | Unreadable/insecure code creates compounding debt |
-| "I wrote it, so I know it's correct" | Authors are blind to their own assumptions |
-| "We'll clean it up later" | Later never comes. The review is the quality gate |
-| "AI-generated code is probably fine" | AI code needs more scrutiny — it's confident even when wrong |
-| "The tests pass, so it's good" | Tests don't catch architecture, security, or readability issues |
-
-### Red Flags
-
-- PRs merged without review
-- "LGTM" without evidence of actual review
-- Review that only checks if tests pass (ignoring other axes)
-- Security changes without security-focused review
-- Large PRs that are "too big to review" (split them)
-- No regression tests with bug fix PRs
-- Accepting "I'll fix it later" — it never happens
+→ Full process, rationalizations table, red flags: `references/code-review.md`
 
 ---
 
@@ -427,99 +353,26 @@ Don't leave dead code lying around — it confuses future readers. But don't sil
 
 ## Technical Debt Assessment
 
-When the scope extends beyond a single module to project-wide debt, use this framework to inventory, quantify, and prioritize remediation.
+When scope extends beyond a single module to project-wide debt, inventory across 5 categories (Code, Architecture, Testing, Documentation, Infrastructure), quantify impact in hours/month, and rank remediation by ROI — not severity alone.
 
-### Debt Inventory
+**Key rules:** Never big-bang rewrites (use Strangler Fig pattern). Set quality gates (complexity max 10, duplication max 5%, coverage min 80%). Maintain a debt budget.
 
-Scan for debt across five categories. Code debt overlaps with the Code Smells section above; the other four are unique to project-level assessment.
-
-| Category | What to Scan | Quantify |
-|---|---|---|
-| **Code** | Duplicated logic, complex methods (>50 lines), deep nesting (>3 levels), god classes (>500 lines / >20 methods) | Lines duplicated, cyclomatic complexity, hotspot count |
-| **Architecture** | Missing/leaky abstractions, violated boundaries, circular dependencies, monolithic components | Component size, dependency violations, coupling metrics |
-| **Testing** | Untested paths, missing edge cases, no integration tests, brittle/flaky/slow tests | Coverage %, critical untested paths, test runtime |
-| **Documentation** | Undocumented public APIs, missing architecture diagrams, no onboarding guides | Undocumented public API count |
-| **Infrastructure** | Manual deployment steps, no rollback, missing monitoring, no performance baselines | Deployment time/failure rate |
-
-### Impact Quantification
-
-For each debt item, estimate real cost to justify remediation effort:
-
-| Dimension | Template | Example |
-|---|---|---|
-| **Velocity** | `N hours/bug × M bugs/month = monthly cost` | Duplicate validation in 5 files: 2h/bug × 10 bugs = 20h/month |
-| **Quality** | `bug rate × cost per bug (investigate + fix + test + deploy)` | Missing integration tests: 3 prod bugs/month × 9h each = 27h/month |
-| **Risk** | Critical (security/data loss) / High (outages) / Medium (slow delivery) / Low (style) | Outdated auth library: Critical |
-
-### Prioritized Remediation Roadmap
-
-Rank by ROI (savings ÷ effort), not by severity alone:
-
-| Tier | Timeframe | Criteria | Examples |
-|---|---|---|---|
-| **Quick Wins** | Week 1-2 | High value, low effort (< 16h), immediate ROI | Extract duplicate validation, add error monitoring, automate deployments |
-| **Medium-Term** | Month 1-3 | Moderate effort (40-100h), positive ROI within 3 months | Split god class, upgrade framework, add test coverage to critical paths |
-| **Long-Term** | Quarter 2-4 | Large effort (100h+), strategic value, positive ROI within 6 months | DDD adoption, comprehensive test suite, architecture modernization |
-
-For each item, state: `Effort: Nh | Savings: Nh/month | ROI: positive after X months`
-
-### Incremental Migration Strategy
-
-When replacing legacy code, use the Strangler Fig pattern — never big-bang rewrites:
-
-```
-Phase 1: Facade over legacy (new clean interface, legacy underneath)
-Phase 2: New implementation alongside legacy
-Phase 3: Gradual migration with feature flags
-Phase 4: Remove legacy path
-```
-
-Each phase is a separate deployable increment. If any phase fails, roll back to the previous phase.
-
-### Prevention Strategy
-
-**Automated Quality Gates** (pre-commit / CI):
-
-| Gate | Threshold |
-|---|---|
-| Cyclomatic complexity | Max 10 per function |
-| Duplication | Max 5% of codebase |
-| Test coverage (new code) | Min 80% |
-| Dependency audit | No high-severity vulnerabilities |
-| Performance regression | Max 10% degradation |
-
-**Debt Budget**: Allow max 2% monthly increase, require 5% quarterly reduction. Track with tooling (SonarQube, CodeCov, Dependabot).
-
-### Success Metrics
-
-| Period | Metrics |
-|---|---|
-| **Monthly** | Debt score trend, bug rate, deployment frequency, lead time, test coverage |
-| **Quarterly** | Architecture health score, developer satisfaction, performance benchmarks, security audit results |
-
-Target: debt score -5%/month, bug rate -20%, deployment frequency +50%.
+→ Full framework, quantification templates, roadmap tiers, prevention strategy: `references/techdebt.md`
 
 ---
 
 ## Anti-Patterns
 
-- **Refactoring test code alongside production code**: Tests are the specification. If a test breaks during refactoring, either you changed behavior (not refactoring) or the test was testing implementation details (fix the test in a separate, dedicated pass).
-- **Premature extraction**: Extracting a 1-3 line block used 2-3 times into a named helper. The indirection costs more than the duplication.
-- **Type-erasing helpers**: Any helper that accepts `unknown`/`Any`/`Object` to "reduce duplication" loses type safety.
-- **Refactoring while fixing bugs**: Fix the bug minimally first, refactor in separate commit.
-- **Batch-committing**: "Cleaned up the module" as one commit with 15 changes — impossible to review or revert.
-- **Shotgun inlining**: Inlining everything with 1 caller regardless of context. Respect constructor families and complex logic.
-- **Skipping the straggler sweep**: Code compiles but next person reads stale comments and wastes 30 minutes confused.
-- **Identity functions**: `def f(x): return x` has callers but does nothing useful — it's dead code wearing a disguise.
-- **Speculative v2 code**: Commented-out types or functions "deferred to v2". Git remembers — delete them.
-- **Secondary key when primary exists**: Matching by name/slug/path when a stable id is available. Secondary keys can collide or change.
-- **Simplifying code you don't understand**: Chesterton's Fence applies. Check git blame. Accumulated complexity often has no reason, but sometimes it does — verify before you simplify.
-- **"I'll clean it up later"**: Deferred cleanup rarely happens. The review is the quality gate — clean up before merge, not after.
-- **Rubber-stamp review**: "LGTM" without evidence of review. Every change deserves actual scrutiny.
-- **Reviewing only test results**: Tests passing is necessary but not sufficient — architecture, security, and readability need separate evaluation.
-- **Big-bang rewrites**: Replacing a legacy system in one shot. Use Strangler Fig pattern instead — incremental migration with feature flags.
-- **Debt without metrics**: "We have a lot of tech debt" without quantification. No ROI calculation means no prioritization — measure first.
-- **100% remediation goal**: Eliminating all debt is neither possible nor desirable. Target the high-ROI items and maintain a debt budget.
+Key anti-patterns to watch for (read the full list when encountering issues):
+
+- **Refactoring test code alongside production code** — destroys the safety net
+- **Premature extraction** — 1-3 line blocks used 2-3 times don't need helpers
+- **Batch-committing** — "Cleaned up the module" as one giant commit
+- **Shotgun inlining** — inlining everything with 1 caller regardless of context
+- **"I'll clean it up later"** — deferred cleanup rarely happens
+- **Simplifying code you don't understand** — Chesterton's Fence: check git blame first
+
+→ Full list (17 entries) with explanations: `references/anti-patterns.md`
 
 ---
 
